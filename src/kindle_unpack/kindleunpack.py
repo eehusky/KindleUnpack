@@ -6,7 +6,7 @@ from __future__ import unicode_literals, division, absolute_import, print_functi
 
 import os
 
-__path__ = ["lib", os.path.dirname(os.path.realpath(__file__)), "kindleunpack"]
+#__path__ = ["lib", os.path.dirname(os.path.realpath(__file__)), "kindleunpack"]
 
 import sys
 import codecs
@@ -540,7 +540,7 @@ def processMobi8(mh, metadata, sect, files, rscnames, pagemapproc, k8resc, obfus
 
     # FYI:  KindleUnpack does *not* support mixed fixed/reflowable format epubs
     # Books are assumed to be either fully fixed format or fully reflowable
-    
+
     # look to see if this kf8 was a fixed format and if so
     # set a viewport to be set in every xhtml file
     viewport = None
@@ -548,8 +548,8 @@ def processMobi8(mh, metadata, sect, files, rscnames, pagemapproc, k8resc, obfus
         if 'true' == metadata.get('fixed-layout', [''])[0].lower():
             resolution = metadata['original-resolution'][0].lower()
             width, height = resolution.split('x')
-            if width.isdigit() and int(width) > 0 and height.isdigit() and int(height) > 0: 
-                viewport = 'width=%s, height=%s' % (width, height) 
+            if width.isdigit() and int(width) > 0 and height.isdigit() and int(height) > 0:
+                viewport = 'width=%s, height=%s' % (width, height)
 
     # convert the rawML to a set of xhtml files
     print("Building an epub-like structure")
@@ -581,7 +581,7 @@ def processMobi8(mh, metadata, sect, files, rscnames, pagemapproc, k8resc, obfus
                 fileinfo.append(["coverpage", 'Text', filename])
                 guidetext += cover.guide_toxml()
                 cover.writeXHTML()
-                
+
     n =  k8proc.getNumberOfParts()
     for i in range(n):
         part = k8proc.getPart(i)
@@ -797,7 +797,7 @@ def process_all_mobi_headers(files, apnxfile, sect, mhlst, K8Boundary, k8only=Fa
             end = K8Boundary
 
         # Not sure the try/except is necessary, but just in case
-        try: 
+        try:
             thumb_offset = int(metadata.get('ThumbOffset', ['-1'])[0])
         except:
             thumb_offset = None
