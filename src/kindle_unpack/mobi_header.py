@@ -4,6 +4,8 @@
 
 from __future__ import unicode_literals, division, absolute_import, print_function
 
+from loguru import logger
+
 DEBUG_USE_ORDERED_DICTIONARY = False  # OrderedDict is supoorted >= python 2.7.
 """ set to True to use OrderedDict for MobiHeader.metadata."""
 
@@ -899,7 +901,7 @@ class MobiHeader:
                         else:
                             addValue(name, unicode_str(str(value)))
                     else:
-                        print("Warning: Bad key, size, value combination detected in EXTH ", id, size, hexlify(content))
+                        logger.warning("Warning: Bad key, size, value combination detected in EXTH ", id, size, hexlify(content))
                         addValue(name, hexlify(content))
                 elif id in MobiHeader.id_map_hexstrings:
                     name = MobiHeader.id_map_hexstrings[id]

@@ -174,6 +174,7 @@ KINDLEGENLOG_FILENAME = "kindlegenbuild.log"
 K8_BOUNDARY = b"BOUNDARY"
 """ The section data that divides K8 mobi ebooks. """
 
+from loguru import logger
 import os
 import struct
 import re
@@ -292,7 +293,7 @@ def processFONT(i, files, rscnames, sect, data, obfuscate_data, beg, rsc_ptr):
         elif hdr == b"OTTO":
             ext = ".otf"
         else:
-            print("Warning: unknown font header %s" % hexlify(hdr))
+            logger.warning("Warning: unknown font header %s" % hexlify(hdr))
         if (ext == ".ttf" or ext == ".otf") and (fflags & 0x0002):
             obfuscate_data.append(fontname + ext)
         fontname += ext
@@ -313,7 +314,7 @@ def processCRES(i, files, rscnames, sect, data, beg, rsc_ptr, use_hd):
     imgtype = get_image_type(None, data)
 
     if imgtype is None:
-        print("Warning: CRES Section %s does not contain a recognised resource" % i)
+        logger.warning("Warning: CRES Section %s does not contain a recognised resource" % i)
         rscnames.append(None)
         sect.setsectiondescription(i, "Mysterious CRES data, first four bytes %s" % describe(data[0:4]))
         if DUMP:
@@ -390,7 +391,7 @@ def processRESC(i, files, rscnames, sect, data, k8resc):
         # parse the spine and metadata from RESC
         k8resc = K8RESCProcessor(data[16:], DUMP)
     else:  # except:
-        print("Warning: cannot extract information from RESC.")
+        logger.warning("Warning: cannot extract information from RESC.")
         k8resc = None
     rscnames.append(None)
     sect.setsectiondescription(i, "K8 RESC section")
@@ -402,7 +403,7 @@ def processImage(i, files, rscnames, sect, data, beg, rsc_ptr, cover_offset, thu
     # Extract an Image
     imgtype = get_image_type(None, data)
     if imgtype is None:
-        print("Warning: Section %s does not contain a recognised resource" % i)
+        logger.warning("Warning: Section %s does not contain a recognised resource" % i)
         rscnames.append(None)
         sect.setsectiondescription(i, "Mysterious Section, first four bytes %s" % describe(data[0:4]))
         if DUMP:
@@ -460,7 +461,7 @@ def processPrintReplica(metadata, files, rscnames, mh):
                 with open(pathof(entryName), "wb") as f:
                     f.write(rawML[sectionOffset : (sectionOffset + sectionLength)])
     except Exception as e:
-        print("Error processing Print Replica: " + str(e))
+        logger.error("Error processing Print Replica: " + str(e))
 
     fileinfo.append([None, "", files.getInputFileBasename() + ".pdf"])
     usedmap = {}
@@ -1039,7 +1040,7 @@ def main(argv=unicode_argv()):
 
     infileext = os.path.splitext(infile)[1].upper()
     if infileext not in [".MOBI", ".PRC", ".AZW", ".AZW3", ".AZW4"]:
-        print("Error: first parameter must be a Kindle/Mobipocket ebook or a Kindle/Print Replica ebook.")
+        logger.error("Error: first parameter must be a Kindle/Mobipocket ebook or a Kindle/Print Replica ebook.")
         return 1
 
     try:
@@ -1048,7 +1049,7 @@ def main(argv=unicode_argv()):
         print("Completed")
 
     except ValueError as e:
-        print("Error: %s" % e)
+        logger.error("Error: %s" % e)
         print(traceback.format_exc())
         return 1
 

@@ -4,6 +4,8 @@
 
 from __future__ import unicode_literals, division, absolute_import, print_function
 
+from loguru import logger
+
 from .compatibility_utils import PY2, unicode_str
 
 if PY2:
@@ -92,7 +94,7 @@ def _parseNames(numpages, data):
                     pname = svalue[0:sp]
                     svalue = svalue[sp + 1 :]
             else:
-                print("Error: unknown page numbering type", nametype)
+                logger.error("Error: unknown page numbering type", nametype)
             pagenames[i] = pname
     return pagenames, pageMap
 

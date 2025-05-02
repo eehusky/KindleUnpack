@@ -4,6 +4,8 @@
 
 from __future__ import unicode_literals, division, absolute_import, print_function
 
+from loguru import logger
+
 DEBUG_USE_ORDERED_DICTIONARY = False  # OrderedDict is supoorted >= python 2.7.
 """ set to True to use OrderedDict for K8RESCProcessor.parsetag.tattr."""
 
@@ -58,7 +60,7 @@ class K8RESCProcessor(object):
             else:
                 self.resc_length = end_pos - start_pos
         if self.resc_length != resc_size:
-            print("Warning: RESC section length({:d}bytes) does not match its size({:d}bytes).".format(self.resc_length, resc_size))
+            logger.warning("Warning: RESC section length({:d}bytes) does not match its size({:d}bytes).".format(self.resc_length, resc_size))
         # now parse RESC after converting it to unicode from utf-8
         try:
             self.resc = unicode_str(data[start_pos : start_pos + self.resc_length])

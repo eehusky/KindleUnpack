@@ -3,6 +3,7 @@
 # vim:ts=4:sw=4:softtabstop=4:smarttab:expandtab
 
 from __future__ import unicode_literals, division, absolute_import, print_function
+from loguru import logger
 
 from .compatibility_utils import PY2, bchr, bstr, bord
 
@@ -81,7 +82,7 @@ class MobiIndex:
     def parseINDXHeader(self, data):
         "read INDX header"
         if not data[:4] == b"INDX":
-            print("Warning: index section is not INDX")
+            logger.warning("Warning: index section is not INDX")
             return False
         words = ("len", "nul1", "type", "gen", "start", "count", "code", "lng", "total", "ordt", "ligt", "nligt", "nctoc")
         num = len(words)
@@ -263,14 +264,14 @@ def getTagMap(controlByteCount, tagTable, entryData, startPos, endPos):
                 totalConsumed += consumed
                 values.append(data)
             if totalConsumed != valueBytes:
-                print("Error: Should consume %s bytes, but consumed %s" % (valueBytes, totalConsumed))
+                logger.error("Error: Should consume %s bytes, but consumed %s" % (valueBytes, totalConsumed))
         tagHashMap[tag] = values
     # Test that all bytes have been processed if endPos is given.
     if endPos is not None and dataStart != endPos:
         # The last entry might have some zero padding bytes, so complain only if non zero bytes are left.
         for char in entryData[dataStart:endPos]:
             if bord(char) != 0:
-                print("Warning: There are unprocessed index bytes left: %s" % toHex(entryData[dataStart:endPos]))
+                logger.warning("Warning: There are unprocessed index bytes left: %s" % toHex(entryData[dataStart:endPos]))
                 if 0:
                     print("controlByteCount: %s" % controlByteCount)
                     print("tagTable: %s" % tagTable)

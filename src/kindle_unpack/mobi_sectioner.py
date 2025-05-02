@@ -4,6 +4,8 @@
 
 from __future__ import unicode_literals, division, absolute_import, print_function
 
+from loguru import logger
+
 from .compatibility_utils import PY2, hexlify, bstr, bord, bchar
 
 import datetime

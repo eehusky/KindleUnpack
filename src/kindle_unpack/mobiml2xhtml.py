@@ -9,6 +9,7 @@ Convert from Mobi ML to XHTML
 """
 
 from __future__ import division, absolute_import, print_function
+from loguru import logger
 
 import os
 import sys
@@ -520,7 +521,7 @@ def main(argv=sys.argv):
         print("XHTML version of book can be found at: " + outname)
 
     except ValueError as e:
-        print("Error: %s" % e)
+        logger.error("Error: %s" % e)
         return 1
 
     return 0

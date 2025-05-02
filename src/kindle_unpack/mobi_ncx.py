@@ -4,6 +4,8 @@
 
 from __future__ import unicode_literals, division, absolute_import, print_function
 
+from loguru import logger
+
 import os
 from .unipath import pathof
 from .compatibility_utils import unescapeit
@@ -135,7 +137,7 @@ class ncxExtract:
         # recursive part
         def recursINDX(max_lvl=0, num=0, lvl=0, start=-1, end=-1):
             if start > len(indx_data) or end > len(indx_data):
-                print("Warning: missing INDX child entries", start, end, len(indx_data))
+                logger.warning("Warning: missing INDX child entries", start, end, len(indx_data))
                 return ""
             if DEBUG_NCX:
                 print("recursINDX lvl %d from %d to %d" % (lvl, start, end))
@@ -171,7 +173,7 @@ class ncxExtract:
         header = ncx_header % (lang, ident, max_lvl + 1, xmlescape(unescapeit(title)))
         ncx = header + body + ncx_footer
         if not len(indx_data) == num:
-            print("Warning: different number of entries in NCX", len(indx_data), num)
+            logger.warning("Warning: different number of entries in NCX", len(indx_data), num)
         return ncx
 
     def writeNCX(self, metadata):
@@ -217,7 +219,7 @@ class ncxExtract:
         # recursive part
         def recursINDX(max_lvl=0, num=0, lvl=0, start=-1, end=-1):
             if start > len(indx_data) or end > len(indx_data):
-                print("Warning: missing INDX child entries", start, end, len(indx_data))
+                logger.warning("Warning: missing INDX child entries", start, end, len(indx_data))
                 return ""
             if DEBUG_NCX:
                 print("recursINDX lvl %d from %d to %d" % (lvl, start, end))
@@ -258,7 +260,7 @@ class ncxExtract:
         header = ncx_header % (lang, ident, max_lvl + 1, xmlescape(unescapeit(title)))
         ncx = header + body + ncx_footer
         if not len(indx_data) == num:
-            print("Warning: different number of entries in NCX", len(indx_data), num)
+            logger.warning("Warning: different number of entries in NCX", len(indx_data), num)
         return ncx
 
     def writeK8NCX(self, ncx_data, metadata):

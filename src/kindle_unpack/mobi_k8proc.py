@@ -3,6 +3,7 @@
 # vim:ts=4:sw=4:softtabstop=4:smarttab:expandtab
 
 from __future__ import unicode_literals, division, absolute_import, print_function
+from loguru import logger
 
 from .compatibility_utils import PY2, bstr, utf8_str
 
@@ -397,7 +398,7 @@ class K8Processor:
         # find the first tag with a named anchor (name or id attribute) before pos
         fname, pn, skelpos, skelend = self.getFileInfo(pos)
         if pn is None and skelpos is None:
-            print("Error: getIDTag - no file contains ", pos)
+            logger.error("Error: getIDTag - no file contains ", pos)
         textblock = self.parts[pn]
         npos = pos - skelpos
         # if npos inside a tag then search all text before the its end of tag marker
@@ -478,7 +479,7 @@ class K8Processor:
         # into a tag look for the next ending tag "/>" or "</" and start your search from there.
         fname, pn, skelpos, skelend = self.getFileInfo(pos)
         if pn is None and skelpos is None:
-            print("Error: getIDTag - no file contains ", pos)
+            logger.error("Error: getIDTag - no file contains ", pos)
         textblock = self.parts[pn]
         npos = pos - skelpos
         # if npos inside a tag then search all text before next ending tag

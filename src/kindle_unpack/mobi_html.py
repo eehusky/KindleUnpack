@@ -3,6 +3,7 @@
 # vim:ts=4:sw=4:softtabstop=4:smarttab:expandtab
 
 from __future__ import unicode_literals, division, absolute_import, print_function
+from loguru import logger
 
 from .compatibility_utils import PY2, utf8_str
 
@@ -96,7 +97,7 @@ class HTMLProcessor:
                 imageNumber = int(m.group(1))
                 imageName = rscnames[imageNumber - 1]
                 if imageName is None:
-                    print("Error: Referenced image %s was not recognized as a valid image" % imageNumber)
+                    logger.error("Error: Referenced image %s was not recognized as a valid image" % imageNumber)
                 else:
                     replacement = b'src="Images/' + utf8_str(imageName) + b'"'
                     tag = image_index_pattern.sub(replacement, tag, 1)
@@ -243,7 +244,7 @@ class XHTMLK8Processor:
                             self.used[imageName] = "used"
                             tag = img_index_pattern.sub(replacement, tag, 1)
                         else:
-                            print("Error: Referenced image %s was not recognized as a valid image in %s" % (imageNumber, tag))
+                            logger.error("Error: Referenced image %s was not recognized as a valid image in %s" % (imageNumber, tag))
                     srcpieces[j] = tag
             flowpart = b"".join(srcpieces)
 
@@ -263,7 +264,7 @@ class XHTMLK8Processor:
                         self.used[imageName] = "used"
                         tag = url_img_index_pattern.sub(replacement, tag, 1)
                     else:
-                        print("Error: Referenced image %s was not recognized as a valid image in %s" % (imageNumber, tag))
+                        logger.error("Error: Referenced image %s was not recognized as a valid image in %s" % (imageNumber, tag))
 
                 # process links to fonts
                 for m in font_index_pattern.finditer(tag):
@@ -272,7 +273,7 @@ class XHTMLK8Processor:
                     osep = m.group()[0:1]
                     csep = m.group()[-1:]
                     if fontName is None:
-                        print("Error: Referenced font %s was not recognized as a valid font in %s" % (fontNumber, tag))
+                        logger.error("Error: Referenced font %s was not recognized as a valid font in %s" % (fontNumber, tag))
                     else:
                         replacement = osep + b"../Fonts/" + utf8_str(fontName) + csep
                         tag = font_index_pattern.sub(replacement, tag, 1)
@@ -350,7 +351,7 @@ class XHTMLK8Processor:
                                 tag = flow_pattern.sub(replacement, tag, 1)
                                 self.used[fnm] = "used"
                         else:
-                            print("warning: ignoring non-existent flow link", tag, " value 0x%x" % num)
+                            logger.warning("Warning: ignoring non-existent flow link", tag, " value 0x%x" % num)
                     srcpieces[j] = tag
             part = b"".join(srcpieces)
 
@@ -380,7 +381,7 @@ class XHTMLK8Processor:
                             self.used[imageName] = "used"
                             tag = img_index_pattern.sub(replacement, tag, 1)
                         else:
-                            print("Error: Referenced image %s in style url was not recognized in %s" % (imageNumber, tag))
+                            logger.error("Error: Referenced image %s in style url was not recognized in %s" % (imageNumber, tag))
                     srcpieces[j] = tag
             part = b"".join(srcpieces)
 
@@ -410,7 +411,7 @@ class XHTMLK8Processor:
                             self.used[imageName] = "used"
                             tag = img_index_pattern.sub(replacement, tag, 1)
                         else:
-                            print("Error: Referenced image %s was not recognized as a valid image in %s" % (imageNumber, tag))
+                            logger.error("Error: Referenced image %s was not recognized as a valid image in %s" % (imageNumber, tag))
                     srcpieces[j] = tag
             part = b"".join(srcpieces)
             # store away modified version

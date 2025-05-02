@@ -4,6 +4,8 @@
 
 from __future__ import unicode_literals, division, absolute_import, print_function
 
+from loguru import logger
+
 from .compatibility_utils import unicode_str
 import os
 from .unipath import pathof
@@ -104,7 +106,7 @@ class NAVProcessor(object):
         # recursive part
         def recursINDX(max_lvl=0, num=0, lvl=0, start=-1, end=-1):
             if start > len(indx_data) or end > len(indx_data):
-                print("Warning (in buildTOC): missing INDX child entries", start, end, len(indx_data))
+                logger.warning("Warning (in buildTOC): missing INDX child entries", start, end, len(indx_data))
                 return ""
             if DEBUG_NAV:
                 print("recursINDX (in buildTOC) lvl %d from %d to %d" % (lvl, start, end))
@@ -147,7 +149,7 @@ class NAVProcessor(object):
 
         data, max_lvl, num = recursINDX()
         if not len(indx_data) == num:
-            print("Warning (in buildTOC): different number of entries in NCX", len(indx_data), num)
+            logger.warning("Warning (in buildTOC): different number of entries in NCX", len(indx_data), num)
         return header + data + footer
 
     def buildNAV(self, ncx_data, guidetext, title, lang):

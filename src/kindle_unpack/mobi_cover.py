@@ -4,6 +4,8 @@
 
 from __future__ import unicode_literals, division, absolute_import, print_function
 
+from loguru import logger
+
 from .compatibility_utils import unicode_str
 
 from .unipath import pathof
@@ -148,7 +150,7 @@ class CoverProcessor(object):
             if cover_image is not None:
                 self.cover_image = cover_image
             else:
-                print("Warning: Cannot identify the cover image.")
+                logger.warning("Warning: Cannot identify the cover image.")
         if self.use_svg:
             try:
                 if imgdata is None:
@@ -224,7 +226,7 @@ class CoverProcessor(object):
 
         outfile = os.path.join(files.k8text, cover_page)
         if os.path.exists(pathof(outfile)):
-            print("Warning: {:s} already exists.".format(cover_page))
+            logger.warning("Warning: {:s} already exists.".format(cover_page))
             os.remove(pathof(outfile))
         with open(pathof(outfile), "wb") as f:
             f.write(data.encode("utf-8"))
