@@ -111,7 +111,7 @@ class K8RESCProcessor(object):
     def parseData(self):
         for prefix, tname, tattr, tcontent in self.resc_tag_iter():
             if self._debug:
-                print("   Parsing RESC: ", prefix, tname, tattr, tcontent)
+                logger.info("   Parsing RESC: ", prefix, tname, tattr, tcontent)
             if tname == "package":
                 self.package_ver = tattr.get("version", "2.0")
                 package_prefix = tattr.get("prefix", "")

@@ -338,7 +338,7 @@ class OPFProcessor(object):
             try:
                 imageName = self.rscnames[imageNumber]
             except:
-                print("Number given for Cover Thumbnail is out of range: %s" % imageNumber)
+                logger.info("Number given for Cover Thumbnail is out of range: %s" % imageNumber)
                 imageName = None
             if imageName is None:
                 logger.error("Error: Cover Thumbnail image %s was not recognized as a valid image" % imageNumber)
@@ -499,7 +499,7 @@ class OPFProcessor(object):
 
     def buildMobi7OPF(self):
         # Build an OPF for mobi7 and azw4.
-        print("Building an opf for mobi7/azw4.")
+        logger.info("Building an opf for mobi7/azw4.")
         data = []
         data.append('<?xml version="1.0" encoding="utf-8"?>\n')
         data.append('<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="uid">\n')
@@ -523,7 +523,7 @@ class OPFProcessor(object):
         return "".join(data)
 
     def buildEPUBOPF(self, has_obfuscated_fonts=False):
-        print("Building an opf for mobi8 using epub version: ", self.target_epubver)
+        logger.info("Building an opf for mobi8 using epub version: ", self.target_epubver)
         if self.target_epubver == "2":
             has_ncx = self.has_ncx
             has_guide = True

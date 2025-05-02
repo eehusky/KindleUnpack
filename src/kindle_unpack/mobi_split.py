@@ -158,7 +158,7 @@ def deletesectionrange(datain, firstsec, lastsec):  # delete a range of sections
 def insertsection(datain, secno, secdata):  # insert a new section
     datalst = []
     nsec = getint(datain, number_of_pdb_records, b"H")
-    # print("inserting secno" , secno,  "into" ,nsec, "sections")
+    # logger.info("inserting secno" , secno,  "into" ,nsec, "sections")
     secstart, secend = getsecaddr(datain, secno)
     zerosecstart, zerosecend = getsecaddr(datain, 0)
     dif = len(secdata)
@@ -188,7 +188,7 @@ def insertsection(datain, secno, secdata):  # insert a new section
 
 
 def insertsectionrange(sectionsource, firstsec, lastsec, sectiontarget, targetsec):  # insert a range of sections
-    # print("inserting secno" , firstsec,  "to", lastsec, "into" ,targetsec, "sections")
+    # logger.info("inserting secno" , firstsec,  "to", lastsec, "into" ,targetsec, "sections")
     # dataout = sectiontarget
     # for idx in range(lastsec,firstsec-1,-1):
     #    dataout = insertsection(dataout,targetsec,readsection(sectionsource,idx))
@@ -387,16 +387,16 @@ class mobi_split:
 
         firstimage = getint(datain_rec0, first_resc_record)
         lastimage = getint(datain_rec0, last_content_index, b"H")
-        # print("Old First Image, last Image", firstimage,lastimage)
+        # logger.info("Old First Image, last Image", firstimage,lastimage)
         if lastimage == 0xFFFF:
             # find the lowest of the next sections and copy up to that.
             ofs_list = [(fcis_index, b"L"), (flis_index, b"L"), (datp_index, b"L"), (hufftbloff, b"L")]
             for ofs, sz in ofs_list:
                 n = getint(datain_rec0, ofs, sz)
-                # print("n",n)
+                # logger.info("n",n)
                 if n > 0 and n < lastimage:
                     lastimage = n - 1
-        print("First Image, last Image", firstimage, lastimage)
+        logger.info("First Image, last Image", firstimage, lastimage)
 
         # Try to null out FONT and RES, but leave the (empty) PDB record so image refs remain valid
         for i in range(firstimage, lastimage):

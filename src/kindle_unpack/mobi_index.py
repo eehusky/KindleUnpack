@@ -46,9 +46,9 @@ class MobiIndex:
             tagSectionStart = idxhdr["len"]
             controlByteCount, tagTable = readTagSection(tagSectionStart, data)
             if self.DEBUG:
-                print("ControlByteCount is", controlByteCount)
-                print("IndexCount is", IndexCount)
-                print("TagTable: %s" % tagTable)
+                logger.info("ControlByteCount is", controlByteCount)
+                logger.info("IndexCount is", IndexCount)
+                logger.info("TagTable: %s" % tagTable)
             for i in range(idx + 1, idx + 1 + IndexCount):
                 sect.setsectiondescription(i, "{0} Extra {1:d} INDX section".format(label, i - idx))
                 data = sect.loadSection(i)
@@ -110,13 +110,13 @@ class MobiIndex:
             ordt2 = struct.unpack_from(bstr(">%dH" % oentries), data, op2 + 4)
 
         if self.DEBUG:
-            print("parsed INDX header:")
+            logger.info("parsed INDX header:")
             for n in words:
                 print(
                     n,
                     "%X" % header[n],
                 )
-            print("")
+            logger.info("")
         return header, ordt1, ordt2
 
     def readCTOC(self, txtdata):
@@ -138,7 +138,7 @@ class MobiIndex:
             name = txtdata[offset : offset + ilen]
             offset += ilen
             if self.DEBUG:
-                print("name length is ", ilen)
+                logger.info("name length is ", ilen)
                 print(idx_offs, name)
             ctoc_data[idx_offs] = name
         return ctoc_data
@@ -225,7 +225,7 @@ def getTagMap(controlByteCount, tagTable, entryData, startPos, endPos):
             continue
         cbyte = ord(entryData[startPos + controlByteIndex : startPos + controlByteIndex + 1])
         if 0:
-            print("Control Byte Index %0x , Control Byte Value %0x" % (controlByteIndex, cbyte))
+            logger.info("Control Byte Index %0x , Control Byte Value %0x" % (controlByteIndex, cbyte))
 
         value = ord(entryData[startPos + controlByteIndex : startPos + controlByteIndex + 1]) & mask
         if value != 0:
@@ -273,10 +273,10 @@ def getTagMap(controlByteCount, tagTable, entryData, startPos, endPos):
             if bord(char) != 0:
                 logger.warning("Warning: There are unprocessed index bytes left: %s" % toHex(entryData[dataStart:endPos]))
                 if 0:
-                    print("controlByteCount: %s" % controlByteCount)
-                    print("tagTable: %s" % tagTable)
-                    print("data: %s" % toHex(entryData[startPos:endPos]))
-                    print("tagHashMap: %s" % tagHashMap)
+                    logger.info("controlByteCount: %s" % controlByteCount)
+                    logger.info("tagTable: %s" % tagTable)
+                    logger.info("data: %s" % toHex(entryData[startPos:endPos]))
+                    logger.info("tagHashMap: %s" % tagHashMap)
                 break
 
     return tagHashMap

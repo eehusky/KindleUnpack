@@ -103,11 +103,11 @@ class K8Processor:
                 self.fdsttbl = struct.unpack_from(bstr(">%dL" % (num_sections * 2)), header, 12)[::2] + (mh.rawSize,)
                 sect.setsectiondescription(self.fdst, "KF8 FDST INDX")
                 if self.DEBUG:
-                    print("\nFDST Section Map:  %d sections" % num_sections)
+                    logger.info("\nFDST Section Map:  %d sections" % num_sections)
                     for j in range(num_sections):
-                        print("Section %d: 0x%08X - 0x%08X" % (j, self.fdsttbl[j], self.fdsttbl[j + 1]))
+                        logger.info("Section %d: 0x%08X - 0x%08X" % (j, self.fdsttbl[j], self.fdsttbl[j + 1]))
             else:
-                print("\nError: K8 Mobi with Missing FDST info")
+                logger.info("\nError: K8 Mobi with Missing FDST info")
 
         # read/process skeleton index info to create the skeleton table
         skeltbl = []
@@ -125,8 +125,8 @@ class K8Processor:
                 fileptr += 1
         self.skeltbl = skeltbl
         if self.DEBUG:
-            print("\nSkel Table:  %d entries" % len(self.skeltbl))
-            print("table: filenum, skeleton name, frag tbl record count, start position, length")
+            logger.info("\nSkel Table:  %d entries" % len(self.skeltbl))
+            logger.info("table: filenum, skeleton name, frag tbl record count, start position, length")
             for j in range(len(self.skeltbl)):
                 print(self.skeltbl[j])
 
@@ -146,8 +146,8 @@ class K8Processor:
                 fragtbl.append([int(text), ctocdata, tagMap[3][0], tagMap[4][0], tagMap[6][0], tagMap[6][1]])
         self.fragtbl = fragtbl
         if self.DEBUG:
-            print("\nFragment Table: %d entries" % len(self.fragtbl))
-            print("table: file position, link id text, file num, sequence number, start position, length")
+            logger.info("\nFragment Table: %d entries" % len(self.fragtbl))
+            logger.info("table: file position, link id text, file num, sequence number, start position, length")
             for j in range(len(self.fragtbl)):
                 print(self.fragtbl[j])
 
@@ -173,8 +173,8 @@ class K8Processor:
                 guidetbl.append([ref_type, ref_title, fileno])
         self.guidetbl = guidetbl
         if self.DEBUG:
-            print("\nGuide Table: %d entries" % len(self.guidetbl))
-            print("table: ref_type, ref_title, fragtbl entry number")
+            logger.info("\nGuide Table: %d entries" % len(self.guidetbl))
+            logger.info("table: ref_type, ref_title, fragtbl entry number")
             for j in range(len(self.guidetbl)):
                 print(self.guidetbl[j])
 
@@ -194,7 +194,7 @@ class K8Processor:
         # *without* destroying any file position information needed for later href processing
         # and create final list of file separation start: stop points and etc in partinfo
         if self.DEBUG:
-            print("\nRebuilding flow piece 0: the main body of the ebook")
+            logger.info("\nRebuilding flow piece 0: the main body of the ebook")
         self.parts = []
         self.partinfo = []
         fragptr = 0
@@ -218,12 +218,12 @@ class K8Processor:
                 if tail.find(b">") < tail.find(b"<") or head.rfind(b">") < head.rfind(b"<"):
                     # There is an incomplete tag in either the head or tail.
                     # This can happen for some badly formed KF8 files
-                    print("The fragment table for %s has incorrect insert position. Calculating manually." % skelname)
+                    logger.info("The fragment table for %s has incorrect insert position. Calculating manually." % skelname)
                     bp, ep = locate_beg_end_of_tag(skeleton, aidtext)
                     if bp != ep:
                         actual_inspos = ep + 1 + startpos
                 if insertpos != actual_inspos:
-                    print("fixed corrupt fragment table insert position", insertpos + skelpos, actual_inspos + skelpos)
+                    logger.info("fixed corrupt fragment table insert position", insertpos + skelpos, actual_inspos + skelpos)
                     insertpos = actual_inspos
                     self.fragtbl[fragptr][0] = actual_inspos + skelpos
                 skeleton = skeleton[0:insertpos] + slice + skeleton[insertpos:]
@@ -299,12 +299,12 @@ class K8Processor:
             self.flowinfo.append([ptype, pformat, pdir, fname])
 
         if self.DEBUG:
-            print("\nFlow Map:  %d entries" % len(self.flowinfo))
+            logger.info("\nFlow Map:  %d entries" % len(self.flowinfo))
             for fi in self.flowinfo:
                 print(fi)
-            print("\n")
+            logger.info("\n")
 
-            print("\nXHTML File Part Position Information: %d entries" % len(self.partinfo))
+            logger.info("\nXHTML File Part Position Information: %d entries" % len(self.partinfo))
             for pi in self.partinfo:
                 print(pi)
 
@@ -315,14 +315,14 @@ class K8Processor:
             #    [^>]* means match any amount of chars except for  '>' char
             #    [^'"] match any amount of chars except for the quote character
             #    \s* means match any amount of whitespace
-            print("\npositions of all aid= pieces")
+            logger.info("\npositions of all aid= pieces")
             id_pattern = re.compile(rb"""<[^>]*\said\s*=\s*['"]([^'"]*)['"][^>]*>""", re.IGNORECASE)
             for m in re.finditer(id_pattern, rawML):
                 [filename, partnum, start, end] = self.getFileInfo(m.start())
                 [seqnum, idtext] = self.getFragTblInfo(m.start())
                 value = fromBase32(m.group(1))
-                print("  aid: %s value: %d at: %d -> part: %d, start: %d, end: %d" % (m.group(1), value, m.start(), partnum, start, end))
-                print("       %s  fragtbl entry %d" % (idtext, seqnum))
+                logger.info("  aid: %s value: %d at: %d -> part: %d, start: %d, end: %d" % (m.group(1), value, m.start(), partnum, start, end))
+                logger.info("       %s  fragtbl entry %d" % (idtext, seqnum))
 
         return
 
@@ -384,7 +384,7 @@ class K8Processor:
         if fname is None:
             # pos does not exist
             # default to skeleton pos instead
-            print("Link To Position", pos, "does not exist, retargeting to top of target")
+            logger.info("Link To Position", pos, "does not exist, retargeting to top of target")
             pos = self.skeltbl[filenum][3]
             fname, pn, skelpos, skelend = self.getFileInfo(pos)
         # an existing "id=" or "name=" attribute must exist in original xhtml otherwise it would not have worked for linking.

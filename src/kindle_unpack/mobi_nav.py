@@ -109,7 +109,7 @@ class NAVProcessor(object):
                 logger.warning("Warning (in buildTOC): missing INDX child entries", start, end, len(indx_data))
                 return ""
             if DEBUG_NAV:
-                print("recursINDX (in buildTOC) lvl %d from %d to %d" % (lvl, start, end))
+                logger.info("recursINDX (in buildTOC) lvl %d from %d to %d" % (lvl, start, end))
             xhtml = ""
             if start <= 0:
                 start = 0
@@ -153,7 +153,7 @@ class NAVProcessor(object):
         return header + data + footer
 
     def buildNAV(self, ncx_data, guidetext, title, lang):
-        print("Building Navigation Document.")
+        logger.info("Building Navigation Document.")
         if FORCE_DEFAULT_TITLE:
             title = DEFAULT_TITLE
         nav_header = ""
@@ -183,7 +183,7 @@ class NAVProcessor(object):
 
     def writeNAV(self, ncx_data, guidetext, metadata):
         # build the xhtml
-        # print("Write Navigation Document.")
+        # logger.info("Write Navigation Document.")
         xhtml = self.buildNAV(ncx_data, guidetext, metadata.get("Title")[0], metadata.get("Language")[0])
         fname = os.path.join(self.files.k8text, self.navname)
         with open(pathof(fname), "wb") as f:

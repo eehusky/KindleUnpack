@@ -112,7 +112,7 @@ class PageMapProcessor:
         self.pn_bits = 0
         self.pmoff = None
         self.pmstr = ""
-        print("Extracting Page Map Information")
+        logger.info("Extracting Page Map Information")
         (rev_len,) = struct.unpack_from(b">L", self.data, 0x10)
         # skip over header, revision string length data, and revision string
         ptr = 0x14 + rev_len

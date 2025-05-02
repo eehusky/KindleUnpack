@@ -32,7 +32,7 @@ class HTMLProcessor:
     def findAnchors(self, rawtext, indx_data, positionMap):
         # process the raw text
         # find anchors...
-        print("Find link anchors")
+        logger.info("Find link anchors")
         link_pattern = re.compile(rb"""<[^<>]+filepos=['"]{0,1}(\d+)[^<>]*>""", re.IGNORECASE)
         # TEST NCX: merge in filepos from indx
         pos_links = [int(m.group(1)) for m in link_pattern.finditer(rawtext)]
@@ -47,7 +47,7 @@ class HTMLProcessor:
                 positionMap[position] = utf8_str('<a id="filepos%d" />' % position)
 
         # apply dictionary metadata and anchors
-        print("Insert data into html")
+        logger.info("Insert data into html")
         pos = 0
         lastPos = len(rawtext)
         dataList = []
@@ -71,19 +71,19 @@ class HTMLProcessor:
         metadata = self.metadata
 
         # put in the hrefs
-        print("Insert hrefs into html")
+        logger.info("Insert hrefs into html")
         # There doesn't seem to be a standard, so search as best as we can
 
         link_pattern = re.compile(rb"""<a([^>]*?)filepos=['"]{0,1}0*(\d+)['"]{0,1}([^>]*?)>""", re.IGNORECASE)
         srctext = link_pattern.sub(rb"""<a\1href="#filepos\2"\3>""", srctext)
 
         # remove empty anchors
-        print("Remove empty anchors from html")
+        logger.info("Remove empty anchors from html")
         srctext = re.sub(rb"<a\s*/>", rb"", srctext)
         srctext = re.sub(rb"<a\s*>\s*</a>", rb"", srctext)
 
         # convert image references
-        print("Insert image references into html")
+        logger.info("Insert image references into html")
         # split string into image tag pieces and other pieces
         image_pattern = re.compile(rb"""(<img.*?>)""", re.IGNORECASE)
         image_index_pattern = re.compile(rb"""recindex=['"]{0,1}([0-9]+)['"]{0,1}""", re.IGNORECASE)
@@ -139,7 +139,7 @@ class XHTMLK8Processor:
         posfid_index_pattern = re.compile(rb"""['"]kindle:pos:fid:([0-9|A-V]+):off:([0-9|A-V]+).*?["']""")
 
         parts = []
-        print("Building proper xhtml for each file")
+        logger.info("Building proper xhtml for each file")
         for i in range(self.k8proc.getNumberOfParts()):
             part = self.k8proc.getPart(i)
             [partnum, dir, filename, beg, end, aidtext] = self.k8proc.getPartInfo(i)

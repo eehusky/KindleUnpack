@@ -205,7 +205,7 @@ from .mobi_dict import dictSupport
 
 def processSRCS(i, files, rscnames, sect, data):
     # extract the source zip archive and save it.
-    print("File contains kindlegen source archive, extracting as %s" % KINDLEGENSRC_FILENAME)
+    logger.info("File contains kindlegen source archive, extracting as %s" % KINDLEGENSRC_FILENAME)
     srcname = os.path.join(files.outdir, KINDLEGENSRC_FILENAME)
     with open(pathof(srcname), "wb") as f:
         f.write(data[16:])
@@ -242,7 +242,7 @@ def processPAGE(i, files, rscnames, sect, data, mh, pagemapproc):
 
 def processCMET(i, files, rscnames, sect, data):
     # extract the build log
-    print("File contains kindlegen build log, extracting as %s" % KINDLEGENLOG_FILENAME)
+    logger.info("File contains kindlegen build log, extracting as %s" % KINDLEGENLOG_FILENAME)
     srcname = os.path.join(files.outdir, KINDLEGENLOG_FILENAME)
     with open(pathof(srcname), "wb") as f:
         f.write(data[10:])
@@ -268,12 +268,12 @@ def processFONT(i, files, rscnames, sect, data, obfuscate_data, beg, rsc_ptr):
     try:
         usize, fflags, dstart, xor_len, xor_start = struct.unpack_from(b">LLLLL", data, 4)
     except:
-        print("Failed to extract font: {0:s} from section {1:d}".format(fontname, i))
+        logger.info("Failed to extract font: {0:s} from section {1:d}".format(fontname, i))
         font_error = True
         ext = ".failed"
         pass
     if not font_error:
-        print("Extracting font:", fontname)
+        logger.info(f"Extracting font: {fontname}")
         font_data = data[dstart:]
         extent = len(font_data)
         extent = min(extent, 1040)
@@ -333,7 +333,7 @@ def processCRES(i, files, rscnames, sect, data, beg, rsc_ptr, use_hd):
     else:
         imgname = "HDimage%05d.%s" % (i, imgtype)
         imgdest = files.hdimgdir
-    print("Extracting HD image: {0:s} from section {1:d}".format(imgname, i))
+    logger.info("Extracting HD image: {0:s} from section {1:d}".format(imgname, i))
     outimg = os.path.join(imgdest, imgname)
     with open(pathof(outimg), "wb") as f:
         f.write(data)
@@ -357,7 +357,7 @@ def processCONT(i, files, rscnames, sect, data):
         if DUMP:
             (cpage,) = struct.unpack_from(b">L", data, 12)
             contexth = data[48:]
-            print("\n\nContainer EXTH Dump")
+            logger.info("\n\nContainer EXTH Dump")
             dump_contexth(cpage, contexth)
             fname = "CONT_Header%05d.dat" % i
             outname = os.path.join(files.outdir, fname)
@@ -371,7 +371,7 @@ def processkind(i, files, rscnames, sect, data):
     dt = data[0:12]
     if dt == b"kindle:embed":
         if DUMP:
-            print("\n\nHD Image Container Description String")
+            logger.info("\n\nHD Image Container Description String")
             print(data)
         sect.setsectiondescription(i, "HD Image Container Description String")
         rscnames.append(None)
@@ -383,7 +383,7 @@ def processRESC(i, files, rscnames, sect, data, k8resc):
     global DUMP
     if DUMP:
         rescname = "RESC%05d.dat" % i
-        print("Extracting Resource: ", rescname)
+        logger.info("Extracting Resource: ", rescname)
         outrsc = os.path.join(files.outdir, rescname)
         with open(pathof(outrsc), "wb") as f:
             f.write(data)
@@ -419,7 +419,7 @@ def processImage(i, files, rscnames, sect, data, beg, rsc_ptr, cover_offset, thu
         imgname = "cover%05d.%s" % (i, imgtype)
     if thumb_offset is not None and i == beg + thumb_offset:
         imgname = "thumb%05d.%s" % (i, imgtype)
-    print("Extracting image: {0:s} from section {1:d}".format(imgname, i))
+    logger.info("Extracting image: {0:s} from section {1:d}".format(imgname, i))
     outimg = os.path.join(files.imgdir, imgname)
     with open(pathof(outimg), "wb") as f:
         f.write(data)
@@ -440,7 +440,7 @@ def processPrintReplica(metadata, files, rscnames, mh):
             f.write(rawML)
 
     fileinfo = []
-    print("Print Replica ebook detected")
+    logger.info("Print Replica ebook detected")
     try:
         (numTables,) = struct.unpack_from(b">L", rawML, 0x04)
         tableIndexOffset = 8 + 4 * numTables
@@ -526,12 +526,12 @@ def processMobi8(mh, metadata, sect, files, rscnames, pagemapproc, k8resc, obfus
         if DUMP:
             print(pagemapproc.getNames())
             print(pagemapproc.getOffsets())
-            print("\n\nPage Map")
+            logger.info("\n\nPage Map")
             print(pagemapxml)
 
     # process the toc ncx
     # ncx map keys: name, pos, len, noffs, text, hlvl, kind, pos_fid, parent, child1, childn, num
-    print("Processing ncx / toc")
+    logger.info("Processing ncx / toc")
     ncx = ncxExtract(mh, files)
     ncx_data = ncx.parseNCX()
     # extend the ncx data with filenames and proper internal idtags
@@ -557,7 +557,7 @@ def processMobi8(mh, metadata, sect, files, rscnames, pagemapproc, k8resc, obfus
                 viewport = "width=%s, height=%s" % (width, height)
 
     # convert the rawML to a set of xhtml files
-    print("Building an epub-like structure")
+    logger.info("Building an epub-like structure")
     htmlproc = XHTMLK8Processor(rscnames, k8proc, viewport)
     usedmap = htmlproc.buildXHTML()
 
@@ -630,7 +630,7 @@ def processMobi8(mh, metadata, sect, files, rscnames, pagemapproc, k8resc, obfus
         nav.writeNAV(ncx_data, guidetext, metadata)
 
     # make an epub-like structure of it all
-    print("Creating an epub-like file")
+    logger.info("Creating an epub-like file")
     files.makeEPUB(usedmap, obfuscate_data, uuid)
 
 
@@ -727,7 +727,7 @@ def processUnknownSections(mh, sect, files, K8Boundary):
     global TERMINATION_INDICATOR2
     global TERMINATION_INDICATOR3
     if DUMP:
-        print("Unpacking any remaining unknown records")
+        logger.info("Unpacking any remaining unknown records")
     beg = mh.start
     end = sect.num_sections
     if beg < K8Boundary:
@@ -750,7 +750,7 @@ def processUnknownSections(mh, sect, files, K8Boundary):
                     outname = os.path.join(files.outdir, fname)
                     with open(pathof(outname), "wb") as f:
                         f.write(data)
-                    print("Extracting %s: %s from section %d" % (description, fname, i))
+                    logger.info("Extracting %s: %s from section %d" % (description, fname, i))
                     description = description + ", extracting as %s" % fname
             else:
                 fname = "unknown%05d.dat" % i
@@ -759,7 +759,7 @@ def processUnknownSections(mh, sect, files, K8Boundary):
                     outname = os.path.join(files.outdir, fname)
                     with open(pathof(outname), "wb") as f:
                         f.write(data)
-                    print("Extracting %s: %s from section %d" % (description, fname, i))
+                    logger.info("Extracting %s: %s from section %d" % (description, fname, i))
                     description = description + ", extracting as %s" % fname
             sect.setsectiondescription(i, description)
 
@@ -776,18 +776,18 @@ def process_all_mobi_headers(files, apnxfile, sect, mhlst, K8Boundary, k8only=Fa
         if mh.isK8():
             sect.setsectiondescription(mh.start, "KF8 Header")
             mhname = os.path.join(files.outdir, "header_K8.dat")
-            print("Processing K8 section of book...")
+            logger.info("Processing K8 section of book...")
         elif mh.isPrintReplica():
             sect.setsectiondescription(mh.start, "Print Replica Header")
             mhname = os.path.join(files.outdir, "header_PR.dat")
-            print("Processing PrintReplica section of book...")
+            logger.info("Processing PrintReplica section of book...")
         else:
             if mh.version == 0:
                 sect.setsectiondescription(mh.start, "PalmDoc Header".format(mh.version))
             else:
                 sect.setsectiondescription(mh.start, "Mobipocket {0:d} Header".format(mh.version))
             mhname = os.path.join(files.outdir, "header.dat")
-            print("Processing Mobipocket {0:d} section of book...".format(mh.version))
+            logger.info("Processing Mobipocket {0:d} section of book...".format(mh.version))
 
         if DUMP:
             # write out raw mobi header data
@@ -805,7 +805,7 @@ def process_all_mobi_headers(files, apnxfile, sect, mhlst, K8Boundary, k8only=Fa
         # first handle all of the different resource sections:  images, resources, fonts, and etc
         # build up a list of image names to use to postprocess the ebook
 
-        print("Unpacking images, resources, fonts, etc")
+        logger.info("Unpacking images, resources, fonts, etc")
         beg = mh.firstresource
         end = sect.num_sections
         if beg < K8Boundary:
@@ -836,7 +836,7 @@ def process_all_mobi_headers(files, apnxfile, sect, mhlst, K8Boundary, k8only=Fa
                     outname = os.path.join(files.outdir, fname)
                     with open(pathof(outname), "wb") as f:
                         f.write(data)
-                    print("Dumping section {0:d} type {1:s} to file {2:s} ".format(i, unicode_str(type), outname))
+                    logger.info("Dumping section {0:d} type {1:s} to file {2:s} ".format(i, unicode_str(type), outname))
                 sect.setsectiondescription(i, "Type {0:s}".format(unicode_str(type)))
                 rscnames.append(None)
             elif type == b"SRCS":
@@ -914,7 +914,7 @@ def unpackBook(infile, outdir, apnxfile=None, epubver="2", use_hd=False, dodump=
     if DUMP:
         sect.dumppalmheader()
     else:
-        print("Palm DB type: %s, %d sections." % (sect.ident.decode("utf-8"), sect.num_sections))
+        logger.info("Palm DB type: %s, %d sections." % (sect.ident.decode("utf-8"), sect.num_sections))
 
     # scan sections to see if this is a compound mobi file (K8 format)
     # and build a list of all mobi headers to process.
@@ -925,7 +925,7 @@ def unpackBook(infile, outdir, apnxfile=None, epubver="2", use_hd=False, dodump=
     K8Boundary = -1
 
     if mh.isK8():
-        print("Unpacking a KF8 book...")
+        logger.info("Unpacking a KF8 book...")
         hasK8 = True
     else:
         # This is either a Mobipocket 7 or earlier, or a combi M7/KF8
@@ -943,7 +943,7 @@ def unpackBook(infile, outdir, apnxfile=None, epubver="2", use_hd=False, dodump=
                     K8Boundary = i
                     break
         if hasK8:
-            print("Unpacking a Combination M{0:d}/KF8 book...".format(mh.version))
+            logger.info("Unpacking a Combination M{0:d}/KF8 book...".format(mh.version))
             if SPLIT_COMBO_MOBIS:
                 # if this is a combination mobi7-mobi8 file split them up
                 mobisplit = mobi_split(infile)
@@ -955,7 +955,7 @@ def unpackBook(infile, outdir, apnxfile=None, epubver="2", use_hd=False, dodump=
                     with open(pathof(outmobi8), "wb") as f:
                         f.write(mobisplit.getResult8())
         else:
-            print("Unpacking a Mobipocket {0:d} book...".format(mh.version))
+            logger.info("Unpacking a Mobipocket {0:d} book...".format(mh.version))
 
     if hasK8:
         files.makeK8Struct()
@@ -968,22 +968,22 @@ def unpackBook(infile, outdir, apnxfile=None, epubver="2", use_hd=False, dodump=
 
 
 def usage(progname):
-    print("")
-    print("Description:")
-    print("  Unpacks an unencrypted Kindle/MobiPocket ebook to html and images")
-    print("  or an unencrypted Kindle/Print Replica ebook to PDF and images")
-    print("  into the specified output folder.")
-    print("Usage:")
-    print("  %s -r -s -p apnxfile -d -h --epub_version= infile [outdir]" % progname)
-    print("Options:")
-    print("    -h                 print this help message")
-    print("    -i                 use HD Images, if present, to overwrite reduced resolution images")
-    print("    -s                 split combination mobis into mobi7 and mobi8 ebooks")
-    print("    -p APNXFILE        path to an .apnx file associated with the azw3 input (optional)")
-    print("    --epub_version=    specify epub version to unpack to: 2, 3, A (for automatic) or ")
-    print("                         F (force to fit to epub2 definitions), default is 2")
-    print("    -d                 dump headers and other info to output and extra files")
-    print("    -r                 write raw data to the output folder")
+    logger.info("")
+    logger.info("Description:")
+    logger.info("  Unpacks an unencrypted Kindle/MobiPocket ebook to html and images")
+    logger.info("  or an unencrypted Kindle/Print Replica ebook to PDF and images")
+    logger.info("  into the specified output folder.")
+    logger.info("Usage:")
+    logger.info("  %s -r -s -p apnxfile -d -h --epub_version= infile [outdir]" % progname)
+    logger.info("Options:")
+    logger.info("    -h                 print this help message")
+    logger.info("    -i                 use HD Images, if present, to overwrite reduced resolution images")
+    logger.info("    -s                 split combination mobis into mobi7 and mobi8 ebooks")
+    logger.info("    -p APNXFILE        path to an .apnx file associated with the azw3 input (optional)")
+    logger.info("    --epub_version=    specify epub version to unpack to: 2, 3, A (for automatic) or ")
+    logger.info("                         F (force to fit to epub2 definitions), default is 2")
+    logger.info("    -d                 dump headers and other info to output and extra files")
+    logger.info("    -r                 write raw data to the output folder")
 
 
 def main(argv=unicode_argv()):
@@ -991,13 +991,13 @@ def main(argv=unicode_argv()):
     global WRITE_RAW_DATA
     global SPLIT_COMBO_MOBIS
 
-    print("KindleUnpack v0.83")
-    print("   Based on initial mobipocket version Copyright © 2009 Charles M. Hannum <root@ihack.net>")
-    print("   Extensive Extensions and Improvements Copyright © 2009-2020 ")
-    print("       by:  P. Durrant, K. Hendricks, S. Siebert, fandrieu, DiapDealer, nickredding, tkeo.")
-    print("   This program is free software: you can redistribute it and/or modify")
-    print("   it under the terms of the GNU General Public License as published by")
-    print("   the Free Software Foundation, version 3.")
+    logger.info("KindleUnpack v0.83")
+    logger.info("   Based on initial mobipocket version Copyright © 2009 Charles M. Hannum <root@ihack.net>")
+    logger.info("   Extensive Extensions and Improvements Copyright © 2009-2020 ")
+    logger.info("       by:  P. Durrant, K. Hendricks, S. Siebert, fandrieu, DiapDealer, nickredding, tkeo.")
+    logger.info("   This program is free software: you can redistribute it and/or modify")
+    logger.info("   it under the terms of the GNU General Public License as published by")
+    logger.info("   the Free Software Foundation, version 3.")
 
     progname = os.path.basename(argv[0])
     try:
@@ -1044,9 +1044,9 @@ def main(argv=unicode_argv()):
         return 1
 
     try:
-        print("Unpacking Book...")
+        logger.info("Unpacking Book...")
         unpackBook(infile, outdir, apnxfile, epubver, use_hd)
-        print("Completed")
+        logger.info("Completed")
 
     except ValueError as e:
         logger.error("Error: %s" % e)

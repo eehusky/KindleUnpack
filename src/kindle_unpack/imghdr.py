@@ -236,20 +236,20 @@ def testall(list, recursive, toplevel):
         if os.path.isdir(filename):
             print(filename + "/:", end=" ")
             if recursive or toplevel:
-                print("recursing down:")
+                logger.info("recursing down:")
                 import glob
 
                 names = glob.glob(os.path.join(glob.escape(filename), "*"))
                 testall(names, recursive, 0)
             else:
-                print("*** directory (use -r) ***")
+                logger.info("*** directory (use -r) ***")
         else:
             print(filename + ":", end=" ")
             sys.stdout.flush()
             try:
                 print(what(filename))
             except OSError:
-                print("*** not found ***")
+                logger.info("*** not found ***")
 
 
 if __name__ == "__main__":

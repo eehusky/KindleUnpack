@@ -243,18 +243,18 @@ class MobiMLConverter(object):
                     self.path.append(tname)
                 elif ttype == "end":
                     if tname != self.path[-1]:
-                        print("improper nesting: ", self.path, tname, ttype)
+                        logger.info("improper nesting: ", self.path, tname, ttype)
                         if tname not in self.path:
                             # handle case of end tag with no beginning by injecting empty begin tag
                             taginfo = ("begin", tname, None)
                             htmlstr += self.processtag(taginfo)
-                            print("     - fixed by injecting empty start tag ", tname)
+                            logger.info("     - fixed by injecting empty start tag ", tname)
                             self.path.append(tname)
                         elif len(self.path) > 1 and tname == self.path[-2]:
                             # handle case of dangling missing end
                             taginfo = ("end", self.path[-1], None)
                             htmlstr += self.processtag(taginfo)
-                            print("     - fixed by injecting end tag ", self.path[-1])
+                            logger.info("     - fixed by injecting end tag ", self.path[-1])
                             self.path.pop()
                     self.path.pop()
 
@@ -510,15 +510,15 @@ def main(argv=sys.argv):
         infile = argv[1]
 
     try:
-        print("Converting Mobi Markup Language to XHTML")
+        logger.info("Converting Mobi Markup Language to XHTML")
         mlc = MobiMLConverter(infile)
-        print("Processing ...")
+        logger.info("Processing ...")
         htmlstr, css, cssname = mlc.processml()
         outname = infile.rsplit(".", 1)[0] + "_converted.html"
         open(outname, "w").write(htmlstr)
         open(cssname, "w").write(css)
-        print("Completed")
-        print("XHTML version of book can be found at: " + outname)
+        logger.info("Completed")
+        logger.info("XHTML version of book can be found at: " + outname)
 
     except ValueError as e:
         logger.error("Error: %s" % e)

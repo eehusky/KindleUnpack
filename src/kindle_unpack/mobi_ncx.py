@@ -89,19 +89,19 @@ class ncxExtract:
                             tmp["kind"] = kindtext
                 indx_data.append(tmp)
                 if DEBUG_NCX:
-                    print("record number: ", num)
+                    logger.info("record number: ", num)
                     print(
                         "name: ",
                         tmp["name"],
                     )
-                    print("position", tmp["pos"], " length: ", tmp["len"])
-                    print("text: ", tmp["text"])
-                    print("kind: ", tmp["kind"])
-                    print("heading level: ", tmp["hlvl"])
-                    print("parent:", tmp["parent"])
-                    print("first child: ", tmp["child1"], " last child: ", tmp["childn"])
-                    print("pos_fid is ", tmp["pos_fid"])
-                    print("\n\n")
+                    logger.info("position", tmp["pos"], " length: ", tmp["len"])
+                    logger.info("text: ", tmp["text"])
+                    logger.info("kind: ", tmp["kind"])
+                    logger.info("heading level: ", tmp["hlvl"])
+                    logger.info("parent:", tmp["parent"])
+                    logger.info("first child: ", tmp["child1"], " last child: ", tmp["childn"])
+                    logger.info("pos_fid is ", tmp["pos_fid"])
+                    logger.info("\n\n")
                 num += 1
         self.indx_data = indx_data
         return indx_data
@@ -140,7 +140,7 @@ class ncxExtract:
                 logger.warning("Warning: missing INDX child entries", start, end, len(indx_data))
                 return ""
             if DEBUG_NCX:
-                print("recursINDX lvl %d from %d to %d" % (lvl, start, end))
+                logger.info("recursINDX lvl %d from %d to %d" % (lvl, start, end))
             xml = ""
             if start <= 0:
                 start = 0
@@ -179,7 +179,7 @@ class ncxExtract:
     def writeNCX(self, metadata):
         # build the xml
         self.isNCX = True
-        print("Write ncx")
+        logger.info("Write ncx")
         # htmlname = os.path.basename(self.files.outbase)
         # htmlname += '.html'
         htmlname = "book.html"
@@ -222,7 +222,7 @@ class ncxExtract:
                 logger.warning("Warning: missing INDX child entries", start, end, len(indx_data))
                 return ""
             if DEBUG_NCX:
-                print("recursINDX lvl %d from %d to %d" % (lvl, start, end))
+                logger.info("recursINDX lvl %d from %d to %d" % (lvl, start, end))
             xml = ""
             if start <= 0:
                 start = 0
@@ -266,7 +266,7 @@ class ncxExtract:
     def writeK8NCX(self, ncx_data, metadata):
         # build the xml
         self.isNCX = True
-        print("Write K8 ncx")
+        logger.info("Write K8 ncx")
         xml = self.buildK8NCX(ncx_data, metadata["Title"][0], metadata["UniqueID"][0], metadata.get("Language")[0])
         bname = "toc.ncx"
         ncxname = os.path.join(self.files.k8oebps, bname)

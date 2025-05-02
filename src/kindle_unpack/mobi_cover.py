@@ -173,7 +173,7 @@ class CoverProcessor(object):
         return self.cover_page
 
     def buildXHTML(self):
-        print("Building a cover page.")
+        logger.info("Building a cover page.")
         files = self.files
         cover_image = self.cover_image
         title = self.title

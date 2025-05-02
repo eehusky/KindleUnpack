@@ -98,7 +98,7 @@ class dictSupport(object):
         header["oentries"] = oentries
 
         if DEBUG_DICT:
-            print("otype %d, oentries %d, op1 %d, op2 %d, otagx %d" % (otype, oentries, op1, op2, otagx))
+            logger.info("otype %d, oentries %d, op1 %d, op2 %d, otagx %d" % (otype, oentries, op1, op2, otagx))
 
         if header["code"] == 0xFDEA or oentries > 0:
             # some dictionaries seem to be codepage 65002 (0xFDEA) which seems
@@ -116,13 +116,13 @@ class dictSupport(object):
             ordt2 = struct.unpack_from(bstr(">%dH" % oentries), data, op2 + 4)
 
         if DEBUG_DICT:
-            print("parsed INDX header:")
+            logger.info("parsed INDX header:")
             for key in header:
                 print(
                     key,
                     "%x" % header[key],
                 )
-            print("\n")
+            logger.info("\n")
         return header, ordt1, ordt2
 
     def getPositionMap(self):
@@ -141,7 +141,7 @@ class dictSupport(object):
             else:
                 metaInflIndexData = sect.loadSection(metaInflIndex)
 
-                print("\nParsing metaInflIndexData")
+                logger.info("\nParsing metaInflIndexData")
                 midxhdr, mhordt1, mhordt2 = self.parseHeader(metaInflIndexData)
 
                 metaIndexCount = midxhdr["count"]
@@ -154,29 +154,29 @@ class dictSupport(object):
                 tagSectionStart = midxhdr["len"]
                 inflectionControlByteCount, inflectionTagTable = readTagSection(tagSectionStart, metaInflIndexData)
                 if DEBUG_DICT:
-                    print("inflectionTagTable: %s" % inflectionTagTable)
+                    logger.info("inflectionTagTable: %s" % inflectionTagTable)
                 if self.hasTag(inflectionTagTable, 0x07):
                     logger.error("Error: Dictionary uses obsolete inflection rule scheme which is not yet supported")
                     decodeInflection = False
 
             data = sect.loadSection(metaOrthIndex)
 
-            print("\nParsing metaOrthIndex")
+            logger.info("\nParsing metaOrthIndex")
             idxhdr, hordt1, hordt2 = self.parseHeader(data)
 
             tagSectionStart = idxhdr["len"]
             controlByteCount, tagTable = readTagSection(tagSectionStart, data)
             orthIndexCount = idxhdr["count"]
-            print("orthIndexCount is", orthIndexCount)
+            logger.info("orthIndexCount is", orthIndexCount)
             if DEBUG_DICT:
-                print("orthTagTable: %s" % tagTable)
+                logger.info("orthTagTable: %s" % tagTable)
             if hordt2 is not None:
-                print("orth entry uses ordt2 lookup table of type ", idxhdr["otype"])
+                logger.info("orth entry uses ordt2 lookup table of type ", idxhdr["otype"])
             hasEntryLength = self.hasTag(tagTable, 0x02)
             if not hasEntryLength:
                 logger.info("Info: Index doesn't contain entry length tags")
 
-            print("Read dictionary index data")
+            logger.info("Read dictionary index data")
             for i in range(metaOrthIndex + 1, metaOrthIndex + 1 + orthIndexCount):
                 data = sect.loadSection(i)
                 hdrinfo, ordt1, ordt2 = self.parseHeader(data)
@@ -349,7 +349,7 @@ class dictSupport(object):
                         deleted = byteArray.pop(position)
                         if bchr(deleted) != char:
                             if DEBUG_DICT:
-                                print("0x03: %s %s %s %s" % (mainEntry, toHex(inflectionRuleData[start:end]), char, bchr(deleted)))
+                                logger.info("0x03: %s %s %s %s" % (mainEntry, toHex(inflectionRuleData[start:end]), char, bchr(deleted)))
                             logger.error("Error: Delete operation of inflection rule failed")
                             return None
                     elif mode == 0x04:
@@ -357,7 +357,7 @@ class dictSupport(object):
                         deleted = byteArray.pop(position)
                         if bchr(deleted) != char:
                             if DEBUG_DICT:
-                                print("0x03: %s %s %s %s" % (mainEntry, toHex(inflectionRuleData[start:end]), char, bchr(deleted)))
+                                logger.info("0x03: %s %s %s %s" % (mainEntry, toHex(inflectionRuleData[start:end]), char, bchr(deleted)))
                             logger.error("Error: Delete operation of inflection rule failed")
                             return None
                     else:
