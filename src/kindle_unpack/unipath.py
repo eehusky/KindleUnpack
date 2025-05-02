@@ -41,6 +41,7 @@ import os
 
 fsencoding = sys.getfilesystemencoding()
 
+
 def pathof(s, enc=fsencoding):
     if s is None:
         return None
@@ -53,17 +54,22 @@ def pathof(s, enc=fsencoding):
             pass
     return s
 
+
 def exists(s):
     return os.path.exists(pathof(s))
+
 
 def isfile(s):
     return os.path.isfile(pathof(s))
 
+
 def isdir(s):
     return os.path.isdir(pathof(s))
 
+
 def mkdir(s):
     return os.mkdir(pathof(s))
+
 
 def listdir(s):
     rv = []
@@ -71,10 +77,12 @@ def listdir(s):
         rv.append(pathof(file))
     return rv
 
+
 def getcwd():
     if PY2:
         return os.getcwdu()
     return os.getcwd()
+
 
 def walk(top):
     top = pathof(top)
@@ -86,8 +94,10 @@ def walk(top):
             rv.append(relpath(os.path.join(base, name), top))
     return rv
 
+
 def relpath(path, start=None):
-    return os.path.relpath(pathof(path) , pathof(start))
+    return os.path.relpath(pathof(path), pathof(start))
+
 
 def abspath(path):
     return os.path.abspath(pathof(path))

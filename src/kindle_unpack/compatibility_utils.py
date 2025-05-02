@@ -33,7 +33,7 @@ import codecs
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 
-iswindows = sys.platform.startswith('win')
+iswindows = sys.platform.startswith("win")
 
 try:
     from urllib.parse import unquote
@@ -42,9 +42,11 @@ except ImportError:
 
 if PY2:
     from HTMLParser import HTMLParser
+
     _h = HTMLParser()
 elif sys.version_info[1] < 4:
     import html.parser
+
     _h = html.parser.HTMLParser()
 else:
     import html as _h
@@ -111,7 +113,7 @@ if PY3:
 
     def bstr(s):
         if isinstance(s, str):
-            return bytes(s, 'latin-1')
+            return bytes(s, "latin-1")
         else:
             return bytes(s)
 
@@ -122,6 +124,7 @@ if PY3:
         return bytes([s])
 
 else:
+
     def bchr(s):
         return chr(s)
 
@@ -133,6 +136,7 @@ else:
 
     def bchar(s):
         return s
+
 
 if PY3:
     # list-producing versions of the major Python iterating functions
@@ -147,8 +151,10 @@ if PY3:
 
     def lfilter(*args, **kwargs):
         return list(filter(*args, **kwargs))
+
 else:
     import __builtin__
+
     # Python 2-builtin ranges produce lists
     lrange = __builtin__.range
     lzip = __builtin__.zip
@@ -158,8 +164,11 @@ else:
 # In Python 3 you can no longer use .encode('hex') on a bytestring
 # instead use the following on both platforms
 import binascii
+
+
 def hexlify(bdata):
-    return (binascii.hexlify(bdata)).decode('ascii')
+    return (binascii.hexlify(bdata)).decode("ascii")
+
 
 # If you: import struct
 # Note:  struct pack, unpack, unpack_from all *require* bytestring format
@@ -171,55 +180,61 @@ def hexlify(bdata):
 # Python 2.X allows the pattern to be any type and converts it to match the data
 # and returns the same type as the data
 
+
 # convert string to be utf-8 encoded
-def utf8_str(p, enc='utf-8'):
+def utf8_str(p, enc="utf-8"):
     if p is None:
         return None
     if isinstance(p, text_type):
-        return p.encode('utf-8')
-    if enc != 'utf-8':
-        return p.decode(enc).encode('utf-8')
+        return p.encode("utf-8")
+    if enc != "utf-8":
+        return p.decode(enc).encode("utf-8")
     return p
 
+
 # convert string to be unicode encoded
-def unicode_str(p, enc='utf-8'):
+def unicode_str(p, enc="utf-8"):
     if p is None:
         return None
     if isinstance(p, text_type):
         return p
     return p.decode(enc)
 
-ASCII_CHARS   = set(chr(x) for x in range(128))
-URL_SAFE      = set('ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-                    'abcdefghijklmnopqrstuvwxyz'
-                    '0123456789' '#' '_.-/~')
+
+ASCII_CHARS = set(chr(x) for x in range(128))
+URL_SAFE = set("ABCDEFGHIJKLMNOPQRSTUVWXYZ" "abcdefghijklmnopqrstuvwxyz" "0123456789" "#" "_.-/~")
 IRI_UNSAFE = ASCII_CHARS - URL_SAFE
+
 
 # returns a quoted IRI (not a URI)
 def quoteurl(href):
-    if isinstance(href,binary_type):
-        href = href.decode('utf-8')
+    if isinstance(href, binary_type):
+        href = href.decode("utf-8")
     result = []
     for char in href:
         if char in IRI_UNSAFE:
             char = "%%%02x" % ord(char)
         result.append(char)
-    return ''.join(result)
+    return "".join(result)
+
 
 # unquotes url/iri
 def unquoteurl(href):
-    if isinstance(href,binary_type):
-        href = href.decode('utf-8')
+    if isinstance(href, binary_type):
+        href = href.decode("utf-8")
     href = unquote(href)
     return href
+
 
 # unescape html
 def unescapeit(sval):
     return _h.unescape(sval)
 
+
 # Python 2.X commandline parsing under Windows has been horribly broken for years!
 # Use the following code to emulate full unicode commandline parsing on Python 2
 # ie. To get  sys.argv arguments and properly encode them as unicode
+
 
 def unicode_argv():
     global iswindows
@@ -248,8 +263,7 @@ def unicode_argv():
         if argc.value > 0:
             # Remove Python executable and commands if present
             start = argc.value - len(sys.argv)
-            return [argv[i] for i in
-                    range(start, argc.value)]
+            return [argv[i] for i in range(start, argc.value)]
         # this should never happen
         return None
     else:
@@ -258,7 +272,7 @@ def unicode_argv():
         if argvencoding is None:
             argvencoding = sys.getfilesystemencoding()
         if argvencoding is None:
-            argvencoding = 'utf-8'
+            argvencoding = "utf-8"
         for arg in sys.argv:
             if isinstance(arg, text_type):
                 argv.append(arg)
@@ -271,8 +285,7 @@ def unicode_argv():
 def add_cp65001_codec():
     if PY2:
         try:
-            codecs.lookup('cp65001')
+            codecs.lookup("cp65001")
         except LookupError:
-            codecs.register(
-                lambda name: name == 'cp65001' and codecs.lookup('utf-8') or None)
+            codecs.register(lambda name: name == "cp65001" and codecs.lookup("utf-8") or None)
     return

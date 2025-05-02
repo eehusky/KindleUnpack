@@ -8,7 +8,7 @@ from .compatibility_utils import PY2, PY3, utf8_str, bstr, bchr
 
 if PY2:
     range = xrange
-    array_format = b'B'
+    array_format = b"B"
 if PY3:
     unichr = chr
     array_format = "B"
@@ -16,19 +16,23 @@ if PY3:
 import array
 
 import struct
+
 # note:  struct pack, unpack, unpack_from all require bytestring format
 # data all the way up to at least python 2.7.5, python 3 okay with bytestring
 
 from .mobi_index import getVariableWidthValue, readTagSection, getTagMap
 from .mobi_utils import toHex
 
-#python 3.9 dropped support for array tostring()
+
+# python 3.9 dropped support for array tostring()
 def convert_to_bytes(ar):
     if PY2:
         return ar.tostring()
     return ar.tobytes()
 
+
 DEBUG_DICT = False
+
 
 class InflectionData(object):
 
@@ -37,8 +41,8 @@ class InflectionData(object):
         self.starts = []
         self.counts = []
         for idata in self.infldatas:
-            start, = struct.unpack_from(b'>L', idata, 0x14)
-            count, = struct.unpack_from(b'>L', idata, 0x18)
+            (start,) = struct.unpack_from(b">L", idata, 0x14)
+            (count,) = struct.unpack_from(b">L", idata, 0x18)
             self.starts.append(start)
             self.counts.append(count)
 
@@ -55,9 +59,9 @@ class InflectionData(object):
 
     def offsets(self, value):
         rvalue, start, count, data = self.lookup(value)
-        offset, = struct.unpack_from(b'>H', data, start + 4 + (2 * rvalue))
+        (offset,) = struct.unpack_from(b">H", data, start + 4 + (2 * rvalue))
         if rvalue + 1 < count:
-            nextOffset, = struct.unpack_from(b'>H',data, start + 4 + (2 * (rvalue + 1)))
+            (nextOffset,) = struct.unpack_from(b">H", data, start + 4 + (2 * (rvalue + 1)))
         else:
             nextOffset = None
         return offset, nextOffset, data
@@ -74,15 +78,12 @@ class dictSupport(object):
 
     def parseHeader(self, data):
         "read INDX header"
-        if not data[:4] == b'INDX':
+        if not data[:4] == b"INDX":
             print("Warning: index section is not INDX")
             return False
-        words = (
-                'len', 'nul1', 'type', 'gen', 'start', 'count', 'code',
-                'lng', 'total', 'ordt', 'ligt', 'nligt', 'nctoc'
-        )
+        words = ("len", "nul1", "type", "gen", "start", "count", "code", "lng", "total", "ordt", "ligt", "nligt", "nctoc")
         num = len(words)
-        values = struct.unpack(bstr('>%dL' % num), data[4:4*(num+1)])
+        values = struct.unpack(bstr(">%dL" % num), data[4 : 4 * (num + 1)])
         header = {}
         for n in range(num):
             header[words[n]] = values[n]
@@ -90,14 +91,14 @@ class dictSupport(object):
         ordt1 = None
         ordt2 = None
 
-        otype, oentries, op1, op2, otagx  = struct.unpack_from(b'>LLLLL',data, 0xa4)
-        header['otype'] = otype
-        header['oentries'] = oentries
+        otype, oentries, op1, op2, otagx = struct.unpack_from(b">LLLLL", data, 0xA4)
+        header["otype"] = otype
+        header["oentries"] = oentries
 
         if DEBUG_DICT:
             print("otype %d, oentries %d, op1 %d, op2 %d, otagx %d" % (otype, oentries, op1, op2, otagx))
 
-        if header['code'] == 0xfdea or oentries > 0:
+        if header["code"] == 0xFDEA or oentries > 0:
             # some dictionaries seem to be codepage 65002 (0xFDEA) which seems
             # to be some sort of strange EBCDIC utf-8 or 16 encoded strings
             # So we need to look for them and store them away to process leading text
@@ -107,15 +108,18 @@ class dictSupport(object):
             # if otype = 0, ORDT table uses 16 bit values as offsets into the table
             # if otype = 1, ORDT table uses 8 bit values as offsets inot the table
 
-            assert(data[op1:op1+4] == b'ORDT')
-            assert(data[op2:op2+4] == b'ORDT')
-            ordt1 = struct.unpack_from(bstr('>%dB' % oentries), data, op1+4)
-            ordt2 = struct.unpack_from(bstr('>%dH' % oentries), data, op2+4)
+            assert data[op1 : op1 + 4] == b"ORDT"
+            assert data[op2 : op2 + 4] == b"ORDT"
+            ordt1 = struct.unpack_from(bstr(">%dB" % oentries), data, op1 + 4)
+            ordt2 = struct.unpack_from(bstr(">%dH" % oentries), data, op2 + 4)
 
         if DEBUG_DICT:
             print("parsed INDX header:")
             for key in header:
-                print(key, "%x" % header[key],)
+                print(
+                    key,
+                    "%x" % header[key],
+                )
             print("\n")
         return header, ordt1, ordt2
 
@@ -138,14 +142,14 @@ class dictSupport(object):
                 print("\nParsing metaInflIndexData")
                 midxhdr, mhordt1, mhordt2 = self.parseHeader(metaInflIndexData)
 
-                metaIndexCount = midxhdr['count']
+                metaIndexCount = midxhdr["count"]
                 idatas = []
                 for j in range(metaIndexCount):
                     idatas.append(sect.loadSection(metaInflIndex + 1 + j))
                 dinfl = InflectionData(idatas)
 
                 inflNameData = sect.loadSection(metaInflIndex + 1 + metaIndexCount)
-                tagSectionStart = midxhdr['len']
+                tagSectionStart = midxhdr["len"]
                 inflectionControlByteCount, inflectionTagTable = readTagSection(tagSectionStart, metaInflIndexData)
                 if DEBUG_DICT:
                     print("inflectionTagTable: %s" % inflectionTagTable)
@@ -158,14 +162,14 @@ class dictSupport(object):
             print("\nParsing metaOrthIndex")
             idxhdr, hordt1, hordt2 = self.parseHeader(data)
 
-            tagSectionStart = idxhdr['len']
+            tagSectionStart = idxhdr["len"]
             controlByteCount, tagTable = readTagSection(tagSectionStart, data)
-            orthIndexCount = idxhdr['count']
+            orthIndexCount = idxhdr["count"]
             print("orthIndexCount is", orthIndexCount)
             if DEBUG_DICT:
                 print("orthTagTable: %s" % tagTable)
             if hordt2 is not None:
-                print("orth entry uses ordt2 lookup table of type ", idxhdr['otype'])
+                print("orth entry uses ordt2 lookup table of type ", idxhdr["otype"])
             hasEntryLength = self.hasTag(tagTable, 0x02)
             if not hasEntryLength:
                 print("Info: Index doesn't contain entry length tags")
@@ -174,49 +178,50 @@ class dictSupport(object):
             for i in range(metaOrthIndex + 1, metaOrthIndex + 1 + orthIndexCount):
                 data = sect.loadSection(i)
                 hdrinfo, ordt1, ordt2 = self.parseHeader(data)
-                idxtPos = hdrinfo['start']
-                entryCount = hdrinfo['count']
+                idxtPos = hdrinfo["start"]
+                entryCount = hdrinfo["count"]
                 idxPositions = []
                 for j in range(entryCount):
-                    pos, = struct.unpack_from(b'>H', data, idxtPos + 4 + (2 * j))
+                    (pos,) = struct.unpack_from(b">H", data, idxtPos + 4 + (2 * j))
                     idxPositions.append(pos)
                 # The last entry ends before the IDXT tag (but there might be zero fill bytes we need to ignore!)
                 idxPositions.append(idxtPos)
                 for j in range(entryCount):
                     startPos = idxPositions[j]
-                    endPos = idxPositions[j+1]
-                    textLength = ord(data[startPos:startPos+1])
-                    text = data[startPos+1:startPos+1+textLength]
+                    endPos = idxPositions[j + 1]
+                    textLength = ord(data[startPos : startPos + 1])
+                    text = data[startPos + 1 : startPos + 1 + textLength]
                     if hordt2 is not None:
-                        utext = u""
-                        if idxhdr['otype'] == 0:
-                            pattern = b'>H'
+                        utext = ""
+                        if idxhdr["otype"] == 0:
+                            pattern = b">H"
                             inc = 2
                         else:
-                            pattern = b'>B'
+                            pattern = b">B"
                             inc = 1
                         pos = 0
                         while pos < textLength:
-                            off, = struct.unpack_from(pattern, text, pos)
+                            (off,) = struct.unpack_from(pattern, text, pos)
                             if off < len(hordt2):
                                 utext += unichr(hordt2[off])
                             else:
                                 utext += unichr(off)
                             pos += inc
-                        text = utext.encode('utf-8')
+                        text = utext.encode("utf-8")
 
-                    tagMap = getTagMap(controlByteCount, tagTable, data, startPos+1+textLength, endPos)
+                    tagMap = getTagMap(controlByteCount, tagTable, data, startPos + 1 + textLength, endPos)
                     if 0x01 in tagMap:
-                        if decodeInflection and 0x2a in tagMap:
-                            inflectionGroups = self.getInflectionGroups(text, inflectionControlByteCount, inflectionTagTable,
-                                                                        dinfl, inflNameData, tagMap[0x2a])
+                        if decodeInflection and 0x2A in tagMap:
+                            inflectionGroups = self.getInflectionGroups(
+                                text, inflectionControlByteCount, inflectionTagTable, dinfl, inflNameData, tagMap[0x2A]
+                            )
                         else:
-                            inflectionGroups = b''
+                            inflectionGroups = b""
                         assert len(tagMap[0x01]) == 1
                         entryStartPosition = tagMap[0x01][0]
                         if hasEntryLength:
                             # The idx:entry attribute "scriptable" must be present to create entry length tags.
-                            ml = b'<idx:entry scriptable="yes"><idx:orth value="' + text + b'">' + inflectionGroups + b'</idx:orth>'
+                            ml = b'<idx:entry scriptable="yes"><idx:orth value="' + text + b'">' + inflectionGroups + b"</idx:orth>"
                             if entryStartPosition in positionMap:
                                 positionMap[entryStartPosition] = positionMap[entryStartPosition] + ml
                             else:
@@ -229,7 +234,7 @@ class dictSupport(object):
                                 positionMap[entryEndPosition] = b"</idx:entry>"
 
                         else:
-                            indexTags = b'<idx:entry>\n<idx:orth value="' + text + b'">\n' + inflectionGroups + b'</idx:entry>\n'
+                            indexTags = b'<idx:entry>\n<idx:orth value="' + text + b'">\n' + inflectionGroups + b"</idx:entry>\n"
                             if entryStartPosition in positionMap:
                                 positionMap[entryStartPosition] = positionMap[entryStartPosition] + indexTags
                             else:
@@ -237,20 +242,20 @@ class dictSupport(object):
         return positionMap
 
     def hasTag(self, tagTable, tag):
-        '''
+        """
         Test if tag table contains given tag.
 
         @param tagTable: The tag table.
         @param tag: The tag to search.
         @return: True if tag table contains given tag; False otherwise.
-        '''
+        """
         for currentTag, _, _, _ in tagTable:
             if currentTag == tag:
                 return True
         return False
 
     def getInflectionGroups(self, mainEntry, controlByteCount, tagTable, dinfl, inflectionNames, groupList):
-        '''
+        """
         Create string which contains the inflection groups with inflection rules as mobipocket tags.
 
         @param mainEntry: The word to inflect.
@@ -260,46 +265,46 @@ class dictSupport(object):
         @param inflectionNames: The inflection rule name data.
         @param groupList: The list of inflection groups to process.
         @return: String with inflection groups and rules or empty string if required tags are not available.
-        '''
+        """
         result = b""
         for value in groupList:
             offset, nextOffset, data = dinfl.offsets(value)
 
             # First byte seems to be always 0x00 and must be skipped.
-            assert ord(data[offset:offset+1]) == 0x00
+            assert ord(data[offset : offset + 1]) == 0x00
             tagMap = getTagMap(controlByteCount, tagTable, data, offset + 1, nextOffset)
 
             # Make sure that the required tags are available.
             if 0x05 not in tagMap:
                 print("Error: Required tag 0x05 not found in tagMap")
                 return ""
-            if 0x1a not in tagMap:
+            if 0x1A not in tagMap:
                 print("Error: Required tag 0x1a not found in tagMap")
-                return b''
+                return b""
 
-            result += b'<idx:infl>'
+            result += b"<idx:infl>"
 
             for i in range(len(tagMap[0x05])):
 
                 # Get name of inflection rule.
                 value = tagMap[0x05][i]
                 consumed, textLength = getVariableWidthValue(inflectionNames, value)
-                inflectionName = inflectionNames[value+consumed:value+consumed+textLength]
+                inflectionName = inflectionNames[value + consumed : value + consumed + textLength]
 
                 # Get and apply inflection rule across possibly multiple inflection data sections
-                value = tagMap[0x1a][i]
+                value = tagMap[0x1A][i]
                 rvalue, start, count, data = dinfl.lookup(value)
-                offset, = struct.unpack_from(b'>H', data, start + 4 + (2 * rvalue))
-                textLength = ord(data[offset:offset+1])
-                inflection = self.applyInflectionRule(mainEntry, data, offset+1, offset+1+textLength)
+                (offset,) = struct.unpack_from(b">H", data, start + 4 + (2 * rvalue))
+                textLength = ord(data[offset : offset + 1])
+                inflection = self.applyInflectionRule(mainEntry, data, offset + 1, offset + 1 + textLength)
                 if inflection is not None:
                     result += b'  <idx:iform name="' + inflectionName + b'" value="' + inflection + b'"/>'
 
-            result += b'</idx:infl>'
+            result += b"</idx:infl>"
         return result
 
     def applyInflectionRule(self, mainEntry, inflectionRuleData, start, end):
-        '''
+        """
         Apply inflection rule.
 
         @param mainEntry: The word to inflect.
@@ -307,16 +312,16 @@ class dictSupport(object):
         @param start: The start position of the inflection rule to use.
         @param end: The end position of the inflection rule to use.
         @return: The string with the inflected word or None if an error occurs.
-        '''
+        """
         mode = -1
         byteArray = array.array(array_format, mainEntry)
         position = len(byteArray)
         for charOffset in range(start, end):
-            char = inflectionRuleData[charOffset:charOffset+1]
+            char = inflectionRuleData[charOffset : charOffset + 1]
             abyte = ord(char)
-            if abyte >= 0x0a and abyte <= 0x13:
+            if abyte >= 0x0A and abyte <= 0x13:
                 # Move cursor backwards
-                offset = abyte - 0x0a
+                offset = abyte - 0x0A
                 if mode not in [0x02, 0x03]:
                     mode = 0x02
                     position = len(byteArray)

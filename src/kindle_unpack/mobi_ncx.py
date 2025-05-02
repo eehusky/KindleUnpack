@@ -10,6 +10,7 @@ from .compatibility_utils import unescapeit
 
 
 import re
+
 # note: re requites the pattern to be the exact same type as the data to be searched in python3
 # but u"" is not allowed for the pattern itself only b""
 
@@ -19,6 +20,7 @@ from .mobi_utils import toBase32
 from .mobi_index import MobiIndex
 
 DEBUG_NCX = False
+
 
 class ncxExtract:
 
@@ -34,17 +36,17 @@ class ncxExtract:
     def parseNCX(self):
         indx_data = []
         tag_fieldname_map = {
-                1: ['pos',0],
-                2: ['len',0],
-                3: ['noffs',0],
-                4: ['hlvl',0],
-                5: ['koffs',0],
-                6: ['pos_fid',0],
-                21: ['parent',0],
-                22: ['child1',0],
-                23: ['childn',0]
+            1: ["pos", 0],
+            2: ["len", 0],
+            3: ["noffs", 0],
+            4: ["hlvl", 0],
+            5: ["koffs", 0],
+            6: ["pos_fid", 0],
+            21: ["parent", 0],
+            22: ["child1", 0],
+            23: ["childn", 0],
         }
-        if self.ncxidx != 0xffffffff:
+        if self.ncxidx != 0xFFFFFFFF:
             outtbl, ctoc_text = self.mi.getIndexData(self.ncxidx, "NCX")
             if DEBUG_NCX:
                 print(ctoc_text)
@@ -52,48 +54,51 @@ class ncxExtract:
             num = 0
             for [text, tagMap] in outtbl:
                 tmp = {
-                        'name': text.decode('utf-8'),
-                        'pos':  -1,
-                        'len':  0,
-                        'noffs': -1,
-                        'text' : "Unknown Text",
-                        'hlvl' : -1,
-                        'kind' : "Unknown Kind",
-                        'pos_fid' : None,
-                        'parent' : -1,
-                        'child1' : -1,
-                        'childn' : -1,
-                        'num'  : num
-                        }
+                    "name": text.decode("utf-8"),
+                    "pos": -1,
+                    "len": 0,
+                    "noffs": -1,
+                    "text": "Unknown Text",
+                    "hlvl": -1,
+                    "kind": "Unknown Kind",
+                    "pos_fid": None,
+                    "parent": -1,
+                    "child1": -1,
+                    "childn": -1,
+                    "num": num,
+                }
                 for tag in tag_fieldname_map:
                     [fieldname, i] = tag_fieldname_map[tag]
                     if tag in tagMap:
                         fieldvalue = tagMap[tag][i]
                         if tag == 6:
-                            pos_fid = toBase32(fieldvalue,4).decode('utf-8')
-                            fieldvalue2 = tagMap[tag][i+1]
-                            pos_off = toBase32(fieldvalue2,10).decode('utf-8')
-                            fieldvalue = 'kindle:pos:fid:%s:off:%s' % (pos_fid, pos_off)
+                            pos_fid = toBase32(fieldvalue, 4).decode("utf-8")
+                            fieldvalue2 = tagMap[tag][i + 1]
+                            pos_off = toBase32(fieldvalue2, 10).decode("utf-8")
+                            fieldvalue = "kindle:pos:fid:%s:off:%s" % (pos_fid, pos_off)
                         tmp[fieldname] = fieldvalue
                         if tag == 3:
-                            toctext = ctoc_text.get(fieldvalue, b'Unknown Text')
+                            toctext = ctoc_text.get(fieldvalue, b"Unknown Text")
                             toctext = toctext.decode(self.mh.codec)
-                            tmp['text'] = toctext
+                            tmp["text"] = toctext
                         if tag == 5:
-                            kindtext = ctoc_text.get(fieldvalue, b'Unknown Kind')
+                            kindtext = ctoc_text.get(fieldvalue, b"Unknown Kind")
                             kindtext = kindtext.decode(self.mh.codec)
-                            tmp['kind'] = kindtext
+                            tmp["kind"] = kindtext
                 indx_data.append(tmp)
                 if DEBUG_NCX:
                     print("record number: ", num)
-                    print("name: ", tmp['name'],)
-                    print("position", tmp['pos']," length: ", tmp['len'])
-                    print("text: ", tmp['text'])
-                    print("kind: ", tmp['kind'])
-                    print("heading level: ", tmp['hlvl'])
-                    print("parent:", tmp['parent'])
-                    print("first child: ",tmp['child1']," last child: ", tmp['childn'])
-                    print("pos_fid is ", tmp['pos_fid'])
+                    print(
+                        "name: ",
+                        tmp["name"],
+                    )
+                    print("position", tmp["pos"], " length: ", tmp["len"])
+                    print("text: ", tmp["text"])
+                    print("kind: ", tmp["kind"])
+                    print("heading level: ", tmp["hlvl"])
+                    print("parent:", tmp["parent"])
+                    print("first child: ", tmp["child1"], " last child: ", tmp["childn"])
+                    print("pos_fid is ", tmp["pos_fid"])
                     print("\n\n")
                 num += 1
         self.indx_data = indx_data
@@ -102,8 +107,7 @@ class ncxExtract:
     def buildNCX(self, htmlfile, title, ident, lang):
         indx_data = self.indx_data
 
-        ncx_header = \
-'''<?xml version='1.0' encoding='utf-8'?>
+        ncx_header = """<?xml version='1.0' encoding='utf-8'?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1" xml:lang="%s">
 <head>
 <meta content="%s" name="dtb:uid"/>
@@ -116,59 +120,56 @@ class ncxExtract:
 <text>%s</text>
 </docTitle>
 <navMap>
-'''
+"""
 
-        ncx_footer = \
-'''  </navMap>
+        ncx_footer = """  </navMap>
 </ncx>
-'''
+"""
 
-        ncx_entry = \
-'''<navPoint id="%s" playOrder="%d">
+        ncx_entry = """<navPoint id="%s" playOrder="%d">
 <navLabel>
 <text>%s</text>
 </navLabel>
-<content src="%s"/>'''
+<content src="%s"/>"""
 
         # recursive part
         def recursINDX(max_lvl=0, num=0, lvl=0, start=-1, end=-1):
-            if start>len(indx_data) or end>len(indx_data):
+            if start > len(indx_data) or end > len(indx_data):
                 print("Warning: missing INDX child entries", start, end, len(indx_data))
-                return ''
+                return ""
             if DEBUG_NCX:
                 print("recursINDX lvl %d from %d to %d" % (lvl, start, end))
-            xml = ''
+            xml = ""
             if start <= 0:
                 start = 0
             if end <= 0:
                 end = len(indx_data)
             if lvl > max_lvl:
                 max_lvl = lvl
-            indent = '  ' * (2 + lvl)
+            indent = "  " * (2 + lvl)
 
             for i in range(start, end):
                 e = indx_data[i]
-                if not e['hlvl'] == lvl:
+                if not e["hlvl"] == lvl:
                     continue
                 # open entry
                 num += 1
-                link = '%s#filepos%d' % (htmlfile, e['pos'])
-                tagid = 'np_%d' % num
-                entry = ncx_entry % (tagid, num, xmlescape(unescapeit(e['text'])), link)
-                entry = re.sub(re.compile('^', re.M), indent, entry, 0)
-                xml += entry + '\n'
+                link = "%s#filepos%d" % (htmlfile, e["pos"])
+                tagid = "np_%d" % num
+                entry = ncx_entry % (tagid, num, xmlescape(unescapeit(e["text"])), link)
+                entry = re.sub(re.compile("^", re.M), indent, entry, 0)
+                xml += entry + "\n"
                 # recurs
-                if e['child1']>=0:
-                    xmlrec, max_lvl, num = recursINDX(max_lvl, num, lvl + 1,
-                            e['child1'], e['childn'] + 1)
+                if e["child1"] >= 0:
+                    xmlrec, max_lvl, num = recursINDX(max_lvl, num, lvl + 1, e["child1"], e["childn"] + 1)
                     xml += xmlrec
                 # close entry
-                xml += indent + '</navPoint>\n'
+                xml += indent + "</navPoint>\n"
             return xml, max_lvl, num
 
         body, max_lvl, num = recursINDX()
         header = ncx_header % (lang, ident, max_lvl + 1, xmlescape(unescapeit(title)))
-        ncx =  header + body + ncx_footer
+        ncx = header + body + ncx_footer
         if not len(indx_data) == num:
             print("Warning: different number of entries in NCX", len(indx_data), num)
         return ncx
@@ -179,17 +180,16 @@ class ncxExtract:
         print("Write ncx")
         # htmlname = os.path.basename(self.files.outbase)
         # htmlname += '.html'
-        htmlname = 'book.html'
-        xml = self.buildNCX(htmlname, metadata['Title'][0], metadata['UniqueID'][0], metadata.get('Language')[0])
+        htmlname = "book.html"
+        xml = self.buildNCX(htmlname, metadata["Title"][0], metadata["UniqueID"][0], metadata.get("Language")[0])
         # write the ncx file
         # ncxname = os.path.join(self.files.mobi7dir, self.files.getInputFileBasename() + '.ncx')
-        ncxname = os.path.join(self.files.mobi7dir, 'toc.ncx')
-        with open(pathof(ncxname), 'wb') as f:
-            f.write(xml.encode('utf-8'))
+        ncxname = os.path.join(self.files.mobi7dir, "toc.ncx")
+        with open(pathof(ncxname), "wb") as f:
+            f.write(xml.encode("utf-8"))
 
     def buildK8NCX(self, indx_data, title, ident, lang):
-        ncx_header = \
-'''<?xml version='1.0' encoding='utf-8'?>
+        ncx_header = """<?xml version='1.0' encoding='utf-8'?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1" xml:lang="%s">
 <head>
 <meta content="%s" name="dtb:uid"/>
@@ -202,64 +202,61 @@ class ncxExtract:
 <text>%s</text>
 </docTitle>
 <navMap>
-'''
+"""
 
-        ncx_footer = \
-'''  </navMap>
+        ncx_footer = """  </navMap>
 </ncx>
-'''
+"""
 
-        ncx_entry = \
-'''<navPoint id="%s" playOrder="%d">
+        ncx_entry = """<navPoint id="%s" playOrder="%d">
 <navLabel>
 <text>%s</text>
 </navLabel>
-<content src="%s"/>'''
+<content src="%s"/>"""
 
         # recursive part
         def recursINDX(max_lvl=0, num=0, lvl=0, start=-1, end=-1):
-            if start>len(indx_data) or end>len(indx_data):
+            if start > len(indx_data) or end > len(indx_data):
                 print("Warning: missing INDX child entries", start, end, len(indx_data))
-                return ''
+                return ""
             if DEBUG_NCX:
                 print("recursINDX lvl %d from %d to %d" % (lvl, start, end))
-            xml = ''
+            xml = ""
             if start <= 0:
                 start = 0
             if end <= 0:
                 end = len(indx_data)
             if lvl > max_lvl:
                 max_lvl = lvl
-            indent = '  ' * (2 + lvl)
+            indent = "  " * (2 + lvl)
 
             for i in range(start, end):
                 e = indx_data[i]
-                htmlfile = e['filename']
-                desttag = e['idtag']
-                if not e['hlvl'] == lvl:
+                htmlfile = e["filename"]
+                desttag = e["idtag"]
+                if not e["hlvl"] == lvl:
                     continue
                 # open entry
                 num += 1
-                if desttag == '':
-                    link = 'Text/%s' % htmlfile
+                if desttag == "":
+                    link = "Text/%s" % htmlfile
                 else:
-                    link = 'Text/%s#%s' % (htmlfile, desttag)
-                tagid = 'np_%d' % num
-                entry = ncx_entry % (tagid, num, xmlescape(unescapeit(e['text'])), link)
-                entry = re.sub(re.compile('^', re.M), indent, entry, 0)
-                xml += entry + '\n'
+                    link = "Text/%s#%s" % (htmlfile, desttag)
+                tagid = "np_%d" % num
+                entry = ncx_entry % (tagid, num, xmlescape(unescapeit(e["text"])), link)
+                entry = re.sub(re.compile("^", re.M), indent, entry, 0)
+                xml += entry + "\n"
                 # recurs
-                if e['child1']>=0:
-                    xmlrec, max_lvl, num = recursINDX(max_lvl, num, lvl + 1,
-                            e['child1'], e['childn'] + 1)
+                if e["child1"] >= 0:
+                    xmlrec, max_lvl, num = recursINDX(max_lvl, num, lvl + 1, e["child1"], e["childn"] + 1)
                     xml += xmlrec
                 # close entry
-                xml += indent + '</navPoint>\n'
+                xml += indent + "</navPoint>\n"
             return xml, max_lvl, num
 
         body, max_lvl, num = recursINDX()
         header = ncx_header % (lang, ident, max_lvl + 1, xmlescape(unescapeit(title)))
-        ncx =  header + body + ncx_footer
+        ncx = header + body + ncx_footer
         if not len(indx_data) == num:
             print("Warning: different number of entries in NCX", len(indx_data), num)
         return ncx
@@ -268,8 +265,8 @@ class ncxExtract:
         # build the xml
         self.isNCX = True
         print("Write K8 ncx")
-        xml = self.buildK8NCX(ncx_data, metadata['Title'][0], metadata['UniqueID'][0], metadata.get('Language')[0])
-        bname = 'toc.ncx'
-        ncxname = os.path.join(self.files.k8oebps,bname)
-        with open(pathof(ncxname), 'wb') as f:
-            f.write(xml.encode('utf-8'))
+        xml = self.buildK8NCX(ncx_data, metadata["Title"][0], metadata["UniqueID"][0], metadata.get("Language")[0])
+        bname = "toc.ncx"
+        ncxname = os.path.join(self.files.k8oebps, bname)
+        with open(pathof(ncxname), "wb") as f:
+            f.write(xml.encode("utf-8"))
